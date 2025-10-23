@@ -51,7 +51,7 @@ This replaces unimplemented placeholders and achieves feature parity with the Ja
 - Post-merge validation (success, missing query root)
 - Full composition flow and edge cases
 
-**Result:** ✅ All 13 composition tests and 874/874 total library tests passing.
+**Result:** ✅ All 13 composition tests pass.
 
 ## Usage Example
 
@@ -76,13 +76,3 @@ match compose(vec![s1, s2]) {
 
 - `apollo-federation/src/composition/mod.rs` — implemented `pre_merge_validations`, `merge_subgraphs`, and post_merge_validations`
 - `apollo-federation/tests/composition_tests.rs` — added unit and integration tests
-- `apollo-federation/tests/main.rs` — cleaned up old references
-
-## Current Status
-
-✅ **Complete and Verified**
-
-- Full composition pipeline functional
-- All tests passing
-- Clean integration
-- Ready for production use
