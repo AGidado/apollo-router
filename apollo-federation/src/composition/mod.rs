@@ -95,11 +95,33 @@ pub fn pre_merge_validations(
 }
 
 pub fn merge_subgraphs(
-    _subgraphs: Vec<Subgraph<Validated>>,
+    subgraphs: Vec<Subgraph<Validated>>,
 ) -> Result<Supergraph<Merged>, Vec<CompositionError>> {
-    Err(vec![CompositionError::InternalError {
-        message: "merge_subgraphs is not implemented yet".to_string(),
-    }])
+    use crate::merge::merge_subgraphs as merge_fn;
+    use crate::subgraph::ValidSubgraph;
+    
+    // Convert Subgraph<Validated> to ValidSubgraph
+    let valid_subgraphs: Vec<ValidSubgraph> = subgraphs
+        .into_iter()
+        .map(|subgraph| ValidSubgraph {
+            name: subgraph.name.clone(),
+            url: subgraph.url.clone(),
+            schema: apollo_compiler::validation::Valid::assume_valid(subgraph.schema().schema().clone()),
+        })
+        .collect();
+    
+    // Use the existing merge function
+    let subgraph_refs: Vec<&ValidSubgraph> = valid_subgraphs.iter().collect();
+    let merge_result = merge_fn(subgraph_refs)
+        .map_err(|failure| {
+            failure.errors.into_iter()
+                .map(|err| CompositionError::InternalError { message: err })
+                .collect::<Vec<CompositionError>>()
+        })?;
+    
+    // Create a Supergraph<Merged> from the merged schema
+    let supergraph = Supergraph::<Merged>::new(merge_result.schema);
+    Ok(supergraph)
 }
 
 pub fn post_merge_validations(
