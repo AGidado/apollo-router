@@ -65,11 +65,33 @@ pub fn validate_subgraphs(
 
 /// Perform validations that require information about all available subgraphs.
 pub fn pre_merge_validations(
-    _subgraphs: &[Subgraph<Validated>],
+    subgraphs: &[Subgraph<Validated>],
 ) -> Result<(), Vec<CompositionError>> {
-    Err(vec![CompositionError::InternalError {
-        message: "pre_merge_validations is not implemented yet".to_string(),
-    }])
+    let mut errors = Vec::new();
+    
+    // Validate that we have at least one subgraph
+    if subgraphs.is_empty() {
+        errors.push(CompositionError::InternalError {
+            message: "Cannot compose with no subgraphs".to_string(),
+        });
+        return Err(errors);
+    }
+    
+    // Validate that all subgraphs have unique names
+    let mut seen_names = std::collections::HashSet::new();
+    for subgraph in subgraphs {
+        if !seen_names.insert(&subgraph.name) {
+            errors.push(CompositionError::InternalError {
+                message: format!("Duplicate subgraph name: {}", subgraph.name),
+            });
+        }
+    }
+    
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }
 
 pub fn merge_subgraphs(
