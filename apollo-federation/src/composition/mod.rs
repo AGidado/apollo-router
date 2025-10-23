@@ -125,9 +125,21 @@ pub fn merge_subgraphs(
 }
 
 pub fn post_merge_validations(
-    _supergraph: &Supergraph<Merged>,
+    supergraph: &Supergraph<Merged>,
 ) -> Result<(), Vec<CompositionError>> {
-    Err(vec![CompositionError::InternalError {
-        message: "post_merge_validations is not implemented yet".to_string(),
-    }])
+    let mut errors = Vec::new();
+    
+    // Validate that the supergraph has a query root type
+    let schema = supergraph.schema();
+    if schema.root_operation(apollo_compiler::ast::OperationType::Query).is_none() {
+        errors.push(CompositionError::InternalError {
+            message: "No queries found in any subgraph: a supergraph must have a query root type".to_string(),
+        });
+    }
+    
+    if errors.is_empty() {
+        Ok(())
+    } else {
+        Err(errors)
+    }
 }
